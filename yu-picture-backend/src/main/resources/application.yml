@@ -1,0 +1,100 @@
+server:
+  port: 8123
+  servlet:
+    context-path: /api
+    session:
+      cookie:
+        # session过期时间30天
+        max-age: 2592000
+
+
+
+
+
+#    项目名称
+spring:
+  application:
+    name: yu-picture-backend
+
+  # 空间图片分表
+  shardingsphere:
+    datasource:
+      names: yu_picture
+      yu_picture:
+        type: com.zaxxer.hikari.HikariDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        url: ${spring.datasource.url}
+        username: ${spring.datasource.username}
+        password: ${spring.datasource.password}
+    rules:
+      sharding:
+        tables:
+          picture:
+            actual-data-nodes: yu_picture.picture  # 动态分表
+            table-strategy:
+              standard:
+                sharding-column: spaceId
+                sharding-algorithm-name: picture_sharding_algorithm  # 使用自定义分片算法
+        sharding-algorithms:
+          picture_sharding_algorithm:
+            type: CLASS_BASED
+            props:
+              strategy: standard
+              algorithmClassName: com.yupi.yupicturebackend.manager.sharding.PictureShardingAlgorithm
+    props:
+      sql-show: true
+
+  #数据库配置
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${spring.datasource.url}
+    username: ${spring.datasource.username}
+    password: ${spring.datasource.password}
+
+  redis:
+    database: ${spring.redis.database}
+    host: ${spring.redis.host}
+    port: ${spring.redis.port}
+    timeout: ${spring.redis.timeout}
+
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  session:
+    store-type: redis
+    #session过期时间2592000秒 30天
+    timeout: 2592000
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: false
+    # 仅在开发环境开启日志
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    enable-sql-runner: true
+    db-config:
+      logic-delete-field: isDelete # 全局逻辑删除的实体字段名
+      logic-delete-value: 1 # 逻辑已删除值（默认为 1）
+      logic-not-delete-value: 0 # 逻辑未删除值（默认为 0）
+knife4j:
+  enable: true
+  openapi:
+    title: 接口文档
+    version: 1.0
+    group:
+      default: #接口文档的组
+        #        group-name: 分组名称
+        api-rule: package
+        api-rule-resources:
+          - com.yupi.yupicturebackend.controller
+cos:
+  client:
+    region: ${cos.client.region}
+    secretId: ${cos.client.secretId}
+    secretKey: ${cos.client.secretKey}
+    host: ${cos.client.host}
+    bucket: ${cos.client.bucket}
+aliYunAi:
+  apiKey: ${aliYunAiApi.accessKeyId}
+
